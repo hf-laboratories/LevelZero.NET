@@ -28,15 +28,38 @@ jobs:
         run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Pack
-        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           dotnet pack --configuration Release --no-build \
             -p:PackageVersion=$VERSION \
             --output ./nupkgs
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: ./nupkgs
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nupkgs
+          path: ./nupkgs
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
       - name: Push to NuGet
-        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           dotnet nuget push ./nupkgs/*.nupkg \
             --api-key ${{ secrets.NUGET_API_KEY }} \
