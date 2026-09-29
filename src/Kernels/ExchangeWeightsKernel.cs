@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated exchange topology weight computation.
@@ -20,24 +20,21 @@ public sealed class ExchangeWeightsKernel : IDisposable
     /// <summary>Creates an exchange weights kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static ExchangeWeightsKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("exchange_weights");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("exchange_weights");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for exchange_weights.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("exchange_weights");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static ExchangeWeightsKernel Create(ComputeDevice device, string spirvPath, string kernelName = "exchange_weights")
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new ExchangeWeightsKernel(device, module, kernel);
     }
 
     public static ExchangeWeightsKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "exchange_weights")
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new ExchangeWeightsKernel(device, module, kernel);
     }
 
@@ -48,7 +45,7 @@ public sealed class ExchangeWeightsKernel : IDisposable
     {
         int totalCells = swarmSize * swarmSize;
 
-        using var outBuf = _device.AllocShared<float>(totalCells);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(totalCells);
 
         _kernel.SetArgBuffer(0, outBuf);
         _kernel.SetArgInt(1, swarmSize);
@@ -70,3 +67,4 @@ public sealed class ExchangeWeightsKernel : IDisposable
         _module.Dispose();
     }
 }
+

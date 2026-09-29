@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using LevelZero.Native;
 
 namespace LevelZero;
@@ -63,7 +63,7 @@ public static class DeviceCapabilityDetector
                 return config;
             }
 
-            var devices = LevelZeroRuntime.EnumerateDevices();
+            IReadOnlyList<DeviceInfo> devices = LevelZeroRuntime.EnumerateDevices();
             if (devices.Count == 0)
             {
                 config.HardwarePresent = false;
@@ -88,7 +88,7 @@ public static class DeviceCapabilityDetector
         }
 
         // Walk levels bottom-up to find the highest matching architecture
-        var match = MatchDevice(deviceName);
+        ArchitectureLevel match = MatchDevice(deviceName);
         config.DeviceTarget = match.DeviceTarget;
         config.Architecture = match.Architecture;
         return config;
@@ -101,14 +101,16 @@ public static class DeviceCapabilityDetector
     /// </summary>
     public static ArchitectureLevel MatchDevice(string deviceName)
     {
-        // Walk from highest rank down — first match wins (highest architecture)
+        // Walk from highest rank down  first match wins (highest architecture)
         for (int i = KnownLevels.Count - 1; i >= 0; i--)
         {
-            var level = KnownLevels[i];
-            foreach (var pattern in level.NamePatterns)
+            ArchitectureLevel level = KnownLevels[i];
+            foreach (string pattern in level.NamePatterns)
             {
                 if (deviceName.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                {
                     return level;
+                }
             }
         }
 
@@ -123,7 +125,7 @@ public static class DeviceCapabilityDetector
     public static LevelZeroConfig DetectAndSave(string? configPath = null)
     {
         configPath ??= LevelZeroConfig.DefaultPath;
-        var config = Detect();
+        LevelZeroConfig config = Detect();
         config.Save(configPath);
         return config;
     }
@@ -136,9 +138,7 @@ public static class DeviceCapabilityDetector
     {
         configPath ??= LevelZeroConfig.DefaultPath;
         var existing = LevelZeroConfig.Load(configPath);
-        if (existing is not null)
-            return existing;
-
-        return DetectAndSave(configPath);
+        return existing is not null ? existing : DetectAndSave(configPath);
     }
 }
+

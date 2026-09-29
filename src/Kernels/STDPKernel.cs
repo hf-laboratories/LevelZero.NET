@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated STDP (Spike-Timing-Dependent Plasticity) weight updates and trace decay.
@@ -23,26 +23,23 @@ public sealed class STDPKernel : IDisposable
     /// <summary>Creates an STDP kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static STDPKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("stdp_plasticity");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("stdp_plasticity");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for stdp_plasticity.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("stdp_plasticity");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static STDPKernel Create(ComputeDevice device, string spirvPath)
     {
-        var module = device.LoadModule(spirvPath);
-        var plasticity = module.GetKernel("stdp_plasticity");
-        var decay = module.GetKernel("stdp_trace_decay");
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel plasticity = module.GetKernel("stdp_plasticity");
+        ComputeKernel decay = module.GetKernel("stdp_trace_decay");
         return new STDPKernel(device, module, plasticity, decay);
     }
 
     public static STDPKernel Create(ComputeDevice device, byte[] spirv)
     {
-        var module = device.LoadModule(spirv);
-        var plasticity = module.GetKernel("stdp_plasticity");
-        var decay = module.GetKernel("stdp_trace_decay");
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel plasticity = module.GetKernel("stdp_plasticity");
+        ComputeKernel decay = module.GetKernel("stdp_trace_decay");
         return new STDPKernel(device, module, plasticity, decay);
     }
 
@@ -54,11 +51,11 @@ public sealed class STDPKernel : IDisposable
         int[] srcGroup, int[] dstGroup, int connCount,
         float aPlus, float aMinus, float wMin, float wMax)
     {
-        using var wBuf = _device.AllocShared(weights);
-        using var preBuf = _device.AllocShared(preTraces);
-        using var postBuf = _device.AllocShared(postTraces);
-        using var srcBuf = _device.AllocShared(srcGroup);
-        using var dstBuf = _device.AllocShared(dstGroup);
+        using SharedBuffer<float> wBuf = _device.AllocShared(weights);
+        using SharedBuffer<float> preBuf = _device.AllocShared(preTraces);
+        using SharedBuffer<float> postBuf = _device.AllocShared(postTraces);
+        using SharedBuffer<int> srcBuf = _device.AllocShared(srcGroup);
+        using SharedBuffer<int> dstBuf = _device.AllocShared(dstGroup);
 
         _plasticityKernel.SetArgBuffer(0, wBuf);
         _plasticityKernel.SetArgBuffer(1, preBuf);
@@ -83,7 +80,7 @@ public sealed class STDPKernel : IDisposable
     /// </summary>
     public void DecayTraces(float[] traces, int count, float decayFactor)
     {
-        using var buf = _device.AllocShared(traces);
+        using SharedBuffer<float> buf = _device.AllocShared(traces);
 
         _decayKernel.SetArgBuffer(0, buf);
         _decayKernel.SetArgInt(1, count);
@@ -103,3 +100,4 @@ public sealed class STDPKernel : IDisposable
         _module.Dispose();
     }
 }
+

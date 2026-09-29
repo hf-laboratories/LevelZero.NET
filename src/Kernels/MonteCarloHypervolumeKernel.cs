@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated Monte Carlo hypervolume estimation.
@@ -20,24 +20,21 @@ public sealed class MonteCarloHypervolumeKernel : IDisposable
     /// <summary>Creates a Monte Carlo hypervolume kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static MonteCarloHypervolumeKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("monte_carlo_hypervolume");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("monte_carlo_hypervolume");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for monte_carlo_hypervolume.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("monte_carlo_hypervolume");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static MonteCarloHypervolumeKernel Create(ComputeDevice device, string spirvPath, string kernelName = "mc_hypervolume_stable")
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new MonteCarloHypervolumeKernel(device, module, kernel);
     }
 
     public static MonteCarloHypervolumeKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "mc_hypervolume_stable")
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new MonteCarloHypervolumeKernel(device, module, kernel);
     }
 
@@ -49,7 +46,7 @@ public sealed class MonteCarloHypervolumeKernel : IDisposable
                         int solCount, int objCount, int sampleCount, uint rngSeed = 42)
     {
         // Generate per-work-item seeds (4 uints each for xoshiro128**)
-        var seeds = new uint[sampleCount * 4];
+        uint[] seeds = new uint[sampleCount * 4];
         for (int i = 0; i < sampleCount; i++)
         {
             seeds[i * 4 + 0] = rngSeed + (uint)i * 2654435761u;
@@ -59,14 +56,14 @@ public sealed class MonteCarloHypervolumeKernel : IDisposable
         }
 
         // Copy uint[] seeds via byte intermediate
-        var seedBytes = new byte[seeds.Length * sizeof(uint)];
+        byte[] seedBytes = new byte[seeds.Length * sizeof(uint)];
         Buffer.BlockCopy(seeds, 0, seedBytes, 0, seedBytes.Length);
 
-        using var solBuf = _device.AllocShared(solutions);
-        using var idealBuf = _device.AllocShared(idealPoint);
-        using var refBuf = _device.AllocShared(referencePoint);
-        using var seedBuf = _device.AllocShared<byte>(seedBytes.Length);
-        using var outBuf = _device.AllocShared<int>(sampleCount);
+        using SharedBuffer<float> solBuf = _device.AllocShared(solutions);
+        using SharedBuffer<float> idealBuf = _device.AllocShared(idealPoint);
+        using SharedBuffer<float> refBuf = _device.AllocShared(referencePoint);
+        using SharedBuffer<byte> seedBuf = _device.AllocShared<byte>(seedBytes.Length);
+        using SharedBuffer<int> outBuf = _device.AllocShared<int>(sampleCount);
 
         seedBuf.Write(seedBytes);
 
@@ -82,10 +79,13 @@ public sealed class MonteCarloHypervolumeKernel : IDisposable
         _kernel.SetGroupSize(localSize);
         _device.Launch(_kernel, ComputeDevice.GroupCount(sampleCount, localSize));
 
-        var dominated = outBuf.ToArray();
+        int[] dominated = outBuf.ToArray();
         int count = 0;
         for (int i = 0; i < sampleCount; i++)
+        {
             count += dominated[i];
+        }
+
         return count;
     }
 
@@ -95,3 +95,4 @@ public sealed class MonteCarloHypervolumeKernel : IDisposable
         _module.Dispose();
     }
 }
+

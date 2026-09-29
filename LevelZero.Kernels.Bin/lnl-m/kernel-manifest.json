@@ -1,0 +1,878 @@
+{
+  "schemaVersion": 1,
+  "generatedAtUtc": "2026-09-03T19:46:14.0684312Z",
+  "deviceTarget": "lnl-m",
+  "sourceDirectory": "C:\\Users\\Alix\\IPUServices\\IPUServices\\src\\HFLabs.IPUServices\\Hardware\\L0.NET\\LevelZero.Kernels",
+  "artifactDirectory": "C:\\Users\\Alix\\IPUServices\\IPUServices\\src\\HFLabs.IPUServices\\Hardware\\L0.NET\\LevelZero.Kernels.Bin\\lnl-m",
+  "toolchain": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+  "kernels": [
+    {
+      "id": "aco_transition",
+      "target": "lnl-m",
+      "sourcePath": "aco_transition.cl",
+      "sourceSha256": "aefc2e497d95f13490527dc63eee93030c8109566fdac81ef46199da1198821d",
+      "entryPoints": [
+        "aco_transition_select"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "aco_transition.spv",
+          "format": "spv",
+          "bytes": 8480,
+          "sha256": "37f10301ff4e7c65e6d5dfa7d619be311f759c17972a2ff39164753f2148e401",
+          "lastWriteTimeUtc": "2026-09-03T19:44:30.0028257Z"
+        },
+        {
+          "path": "aco_transition.zebin",
+          "format": "zebin",
+          "bytes": 29760,
+          "sha256": "363fd08feaee1b77c192793c10e4477ff8d4a05e90f9cda13fcc0779da35cf0f",
+          "lastWriteTimeUtc": "2026-09-03T19:44:28.8821906Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "cmaes_covariance_update",
+      "target": "lnl-m",
+      "sourcePath": "cmaes_covariance_update.cl",
+      "sourceSha256": "39e52eda9967691df1c778563f57dca256d276c90d7c8d2c7d2125deabe54142",
+      "entryPoints": [
+        "cmaes_covariance_update"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "cmaes_covariance_update.spv",
+          "format": "spv",
+          "bytes": 3308,
+          "sha256": "b5af3c4293a6efc018821761bd61c643e5d70284afdbb25efdb7c387a14a8675",
+          "lastWriteTimeUtc": "2026-09-03T19:44:32.5923347Z"
+        },
+        {
+          "path": "cmaes_covariance_update.zebin",
+          "format": "zebin",
+          "bytes": 10560,
+          "sha256": "5afc69569ec39cf2705ee53e8ba96b12151046e79d546ce655af3704eb46ead1",
+          "lastWriteTimeUtc": "2026-09-03T19:44:31.4833995Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "de_mutation",
+      "target": "lnl-m",
+      "sourcePath": "de_mutation.cl",
+      "sourceSha256": "e9db4e50a34ee7cf9c5ce58565ccab0fb3e38596cef217d09bcb4520a5e77eca",
+      "entryPoints": [
+        "de_current_to_best1"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "de_mutation.spv",
+          "format": "spv",
+          "bytes": 2332,
+          "sha256": "74a721990029b5b1c06f479e8eeba43e947b5a363cd0734ba12cac4e28feb041",
+          "lastWriteTimeUtc": "2026-09-03T19:44:35.2968617Z"
+        },
+        {
+          "path": "de_mutation.zebin",
+          "format": "zebin",
+          "bytes": 7984,
+          "sha256": "2272816f3cc00dc5cad0472fb1fece1af0f08efaa0cdb4bd9d6d871bc0683959",
+          "lastWriteTimeUtc": "2026-09-03T19:44:33.9780453Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "dominance_matrix",
+      "target": "lnl-m",
+      "sourcePath": "dominance_matrix.cl",
+      "sourceSha256": "b150cbd30fc9282d15b9d96ecf2b2397a644fff751294ba0363866a732550342",
+      "entryPoints": [
+        "dominance_count",
+        "dominance_matrix",
+        "min_distance_to_set"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "dominance_matrix.spv",
+          "format": "spv",
+          "bytes": 10868,
+          "sha256": "ed7a84b42275028e0593ee49bc90c70a22f824f8bdee9a36bdbd9e343f8c22cf",
+          "lastWriteTimeUtc": "2026-09-03T19:44:37.6425463Z"
+        },
+        {
+          "path": "dominance_matrix.zebin",
+          "format": "zebin",
+          "bytes": 24896,
+          "sha256": "cfb195103ddda5e41ab3abeaa07b38ac943f3500d7ebe9f32dedb7ab44a5a31c",
+          "lastWriteTimeUtc": "2026-09-03T19:44:36.5837271Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "exchange_weights",
+      "target": "lnl-m",
+      "sourcePath": "exchange_weights.cl",
+      "sourceSha256": "681d03c4490c57f5845ae1e3fafdfdfc0259371f4eb34362f6ea76de9d0559d1",
+      "entryPoints": [
+        "exchange_weights"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "exchange_weights.spv",
+          "format": "spv",
+          "bytes": 3164,
+          "sha256": "3cc2c8b9de50ca16d00d053f4ab62e0c5894a4f8196a9cbd5d06c0f9fd1af33c",
+          "lastWriteTimeUtc": "2026-09-03T19:44:39.8480386Z"
+        },
+        {
+          "path": "exchange_weights.zebin",
+          "format": "zebin",
+          "bytes": 10112,
+          "sha256": "90a51f2a81941491234a088eb976269dc5606a57bdd0bc4dd5312a68c453005a",
+          "lastWriteTimeUtc": "2026-09-03T19:44:38.9047568Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "firefly_attraction",
+      "target": "lnl-m",
+      "sourcePath": "firefly_attraction.cl",
+      "sourceSha256": "f93cafec73171df8dd0098bc1db722de341f32e8d1f40ef05922e15c335917d8",
+      "entryPoints": [
+        "flash_coupling",
+        "firefly_attraction",
+        "kuramoto_components"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "firefly_attraction.spv",
+          "format": "spv",
+          "bytes": 10224,
+          "sha256": "34f07519282c0326b9fc3597a70f94f9a7c9c6f9077d4109129d9344f5f7b802",
+          "lastWriteTimeUtc": "2026-09-03T19:44:42.3408445Z"
+        },
+        {
+          "path": "firefly_attraction.zebin",
+          "format": "zebin",
+          "bytes": 38720,
+          "sha256": "600e589f69eb3925e9558164cedd91a453ca639f6bfa69c445af1eb24cf8b925",
+          "lastWriteTimeUtc": "2026-09-03T19:44:41.3746505Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "fitness_kernel_v2",
+      "target": "lnl-m",
+      "sourcePath": "fitness_kernel_v2.cl",
+      "sourceSha256": "c0ce652996f2804d4abf8784be4afef1a2182e3e674d8f85d8f14e3a1b2bca8f",
+      "entryPoints": [
+        "evaluate_objective",
+        "evaluate_fitness",
+        "evaluate_multi_objective_batch"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "fitness_kernel_v2.spv",
+          "format": "spv",
+          "bytes": 13560,
+          "sha256": "48088d51f68888eb6139e88b507a18e4074a874a35ed6298c3e57dcc14507f8d",
+          "lastWriteTimeUtc": "2026-09-03T19:44:45.1187532Z"
+        },
+        {
+          "path": "fitness_kernel_v2.zebin",
+          "format": "zebin",
+          "bytes": 60312,
+          "sha256": "4150df93daa3deeadc585f7ab2d389816ecb78c8ea22fc759eacb74529ade930",
+          "lastWriteTimeUtc": "2026-09-03T19:44:44.1500299Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "fitness_kernel",
+      "target": "lnl-m",
+      "sourcePath": "fitness_kernel.cl",
+      "sourceSha256": "4f45d906c706a34c54e3fe0e3984c2d219eee15f9872356ba457db1c586be5b2",
+      "entryPoints": [
+        "fitness_kernel"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "fitness_kernel.spv",
+          "format": "spv",
+          "bytes": 2028,
+          "sha256": "0cf5b6ca39a004333b381f1946e513d9d184beea55eebcfcf8b0996056bf1862",
+          "lastWriteTimeUtc": "2026-09-03T19:44:47.3386526Z"
+        },
+        {
+          "path": "fitness_kernel.zebin",
+          "format": "zebin",
+          "bytes": 6504,
+          "sha256": "59378515da31fb30a902ebbbd2fc7586c123d3a566c1499d213a82ae7cf84300",
+          "lastWriteTimeUtc": "2026-09-03T19:44:46.1472612Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "graphrag_vector_search",
+      "target": "lnl-m",
+      "sourcePath": "graphrag_vector_search.cl",
+      "sourceSha256": "4227489e6ca6034914e9eed4f702c484f05db0a08dd339196005b596788e15da",
+      "entryPoints": [
+        "graphrag_cosine_similarity_batch",
+        "graphrag_dot_product_batch"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "graphrag_vector_search.spv",
+          "format": "spv",
+          "bytes": 10052,
+          "sha256": "4c0de5e422e4aac600ac0bdbcaa5cbefa61e221951aab70e82c7846d02a33e83",
+          "lastWriteTimeUtc": "2026-09-03T19:44:49.385106Z"
+        },
+        {
+          "path": "graphrag_vector_search.zebin",
+          "format": "zebin",
+          "bytes": 22016,
+          "sha256": "215f5d4cd74695033ba5074406fcb379e8def2b2127f4274e218c80b6caeb3ad",
+          "lastWriteTimeUtc": "2026-09-03T19:44:48.4895152Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "igdplus_distances",
+      "target": "lnl-m",
+      "sourcePath": "igdplus_distances.cl",
+      "sourceSha256": "d31595f11f80da07fed4d93f7251b7bed56429314cb6c9cd67a664413e294b71",
+      "entryPoints": [
+        "igdplus_min_distances"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "igdplus_distances.spv",
+          "format": "spv",
+          "bytes": 3244,
+          "sha256": "8899c164ea07b01f43d13f5202ab279c5d704713f0c8f7ae9af1981a0f884aac",
+          "lastWriteTimeUtc": "2026-09-03T19:44:51.6949704Z"
+        },
+        {
+          "path": "igdplus_distances.zebin",
+          "format": "zebin",
+          "bytes": 8736,
+          "sha256": "6211d5fa5b919767ef7654eb0157dc41dbc462e2bfc1c9d2c45b353e00b71685",
+          "lastWriteTimeUtc": "2026-09-03T19:44:50.4386414Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "llm_kernels",
+      "target": "lnl-m",
+      "sourcePath": "llm_kernels.cl",
+      "sourceSha256": "704435a9ef27dfc4dd9c6fe5f8341b9efb6966faff34de34c35b21a4ee57b987",
+      "entryPoints": [
+        "embedding_lookup",
+        "rmsnorm_fused",
+        "gemm_tgllp",
+        "rope_fused",
+        "swiglu_activation",
+        "fused_sdpa",
+        "fused_sdpa_prefill",
+        "logits_sample",
+        "bias_add",
+        "add_inplace",
+        "kv_cache_store",
+        "kv_cache_store_rows",
+        "copy_slice",
+        "rope_fused_freq",
+        "sigmoid_gate_mul",
+        "dn_conv1d_silu",
+        "gated_delta_rule",
+        "quantize_act_q8"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "llm_kernels.spv",
+          "format": "spv",
+          "bytes": 106608,
+          "sha256": "f14fda9a43aa3c9760f44673323017fc025afb48ebe03c1a2247eecb84d9cc6e",
+          "lastWriteTimeUtc": "2026-09-20T03:42:42.552845Z"
+        },
+        {
+          "path": "llm_kernels.zebin",
+          "format": "zebin",
+          "bytes": 337088,
+          "sha256": "32a375b4ac1f595c159fd8a9cd8d8cc2dfa59eb65c5d9948a11f8fb7cbbf2d30",
+          "lastWriteTimeUtc": "2026-09-20T03:42:41.6344319Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "monte_carlo_hypervolume",
+      "target": "lnl-m",
+      "sourcePath": "monte_carlo_hypervolume.cl",
+      "sourceSha256": "4d08592e2baab9c2613639fb5ff2e9d3c0f95e7b31e0e69f9be4c172db5059f2",
+      "entryPoints": [
+        "mc_hypervolume",
+        "mc_hypervolume_stable"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "monte_carlo_hypervolume.spv",
+          "format": "spv",
+          "bytes": 12796,
+          "sha256": "25c12855eeb115d9f4c2646f8a0b95a4ef4cc102cf8a27ad950638537d29a89b",
+          "lastWriteTimeUtc": "2026-09-03T19:44:56.5371343Z"
+        },
+        {
+          "path": "monte_carlo_hypervolume.zebin",
+          "format": "zebin",
+          "bytes": 34176,
+          "sha256": "0990ce6bb591b10bb924494ce1110c3d71fe9ada7129035aba2b49128f0015c6",
+          "lastWriteTimeUtc": "2026-09-03T19:44:55.6592131Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "nbody_repulsion",
+      "target": "lnl-m",
+      "sourcePath": "nbody_repulsion.cl",
+      "sourceSha256": "3a3b1e250da2df52ccde25b8ff74462060c43b454c1f515625a265fc481ea0fd",
+      "entryPoints": [
+        "nbody_repulsion"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "nbody_repulsion.spv",
+          "format": "spv",
+          "bytes": 3372,
+          "sha256": "c1d1690b83198ad59783757ad903d2dfa3082a46cf6a945e9e54dddd90ccd3de",
+          "lastWriteTimeUtc": "2026-09-03T19:44:58.6379442Z"
+        },
+        {
+          "path": "nbody_repulsion.zebin",
+          "format": "zebin",
+          "bytes": 9512,
+          "sha256": "79fc4089be9d83434227e290fa71054331966ea3e7f08811437c48ea3e4d0bfc",
+          "lastWriteTimeUtc": "2026-09-03T19:44:57.624161Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "pairwise_distance",
+      "target": "lnl-m",
+      "sourcePath": "pairwise_distance.cl",
+      "sourceSha256": "ff98f63e3a47ca5d91b90badcdacb7866c4085401c5d5a4d41a44d34a0e6adcb",
+      "entryPoints": [
+        "pairwise_distance",
+        "pairwise_distance_squared",
+        "pairwise_distance_matrix"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "pairwise_distance.spv",
+          "format": "spv",
+          "bytes": 8360,
+          "sha256": "1c68d52efe5f909006a5169df432984862f1e1028e01f71d83ff97c7c08624e4",
+          "lastWriteTimeUtc": "2026-09-03T19:45:01.0631554Z"
+        },
+        {
+          "path": "pairwise_distance.zebin",
+          "format": "zebin",
+          "bytes": 21680,
+          "sha256": "9046f8a7454adc8ef5de3a88065159d9aec6b3a7bfda1501f0a85aa50de6fb6b",
+          "lastWriteTimeUtc": "2026-09-03T19:45:00.0902794Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "pixie_worker_pipe",
+      "target": "lnl-m",
+      "sourcePath": "pixie_worker_pipe.cl",
+      "sourceSha256": "6bf4eb27379850f342d25cdd21d1b11af000ab4d2422e75c5a04944f78765ffd",
+      "entryPoints": [
+        "pixie_hybrid_eval_pipe",
+        "pixie_swarm_step_pipe"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "pixie_worker_pipe.spv",
+          "format": "spv",
+          "bytes": 9720,
+          "sha256": "5b6226fc29aa13179e033fdb92a8e2a5a01ad4be0f7590a81034b0a8aed0a7b1",
+          "lastWriteTimeUtc": "2026-09-03T19:45:03.2101965Z"
+        },
+        {
+          "path": "pixie_worker_pipe.zebin",
+          "format": "zebin",
+          "bytes": 24584,
+          "sha256": "e6f5838c889545b0af468467c7f17f3c534f64e425558ad46b8eed30e4444cc8",
+          "lastWriteTimeUtc": "2026-09-03T19:45:02.1971153Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "pso_velocity_v2",
+      "target": "lnl-m",
+      "sourcePath": "pso_velocity_v2.cl",
+      "sourceSha256": "1fc78c82cd86244a61f741bdda0c9ad0ffb0709621885a2b77f59bb0f135425a",
+      "entryPoints": [
+        "pso_velocity_v2"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "pso_velocity_v2.spv",
+          "format": "spv",
+          "bytes": 4808,
+          "sha256": "0fa8621e1ceacfd7f7f2e417d8a50aac1cdec6a94b77a1528c11ee713759552f",
+          "lastWriteTimeUtc": "2026-09-03T19:45:05.3599441Z"
+        },
+        {
+          "path": "pso_velocity_v2.zebin",
+          "format": "zebin",
+          "bytes": 13144,
+          "sha256": "81040711f2621aee90184e2c6e1c2fda19b0b18f5e6da9b09a58bfbc579d780d",
+          "lastWriteTimeUtc": "2026-09-03T19:45:04.4833858Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "pso_velocity",
+      "target": "lnl-m",
+      "sourcePath": "pso_velocity.cl",
+      "sourceSha256": "36115baaab5115e34a40f3145cbe647c1c397bfdcb94f35f0d2a2e5997f6c302",
+      "entryPoints": [
+        "pso_velocity"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "pso_velocity.spv",
+          "format": "spv",
+          "bytes": 3552,
+          "sha256": "8119c772309017581d0d83978683cb196d68f5029bd8f3f1f1b013ceceb47d71",
+          "lastWriteTimeUtc": "2026-09-03T19:45:07.6737856Z"
+        },
+        {
+          "path": "pso_velocity.zebin",
+          "format": "zebin",
+          "bytes": 11824,
+          "sha256": "eecee2415c46d61e338f35abea6f2fb12d0c946fec51b1d6070a06c4190ea31e",
+          "lastWriteTimeUtc": "2026-09-03T19:45:06.3933765Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "rastrigin_fitness",
+      "target": "lnl-m",
+      "sourcePath": "rastrigin_fitness.cl",
+      "sourceSha256": "1c4850fea4a4f7b232b0ce2c4379d016dcbe1c3dff71520321f8c3240955f627",
+      "entryPoints": [
+        "rastrigin_fitness",
+        "ackley_fitness",
+        "rosenbrock_fitness",
+        "griewank_fitness"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "rastrigin_fitness.spv",
+          "format": "spv",
+          "bytes": 8788,
+          "sha256": "2e63277d69058b8611577e3859bc3dc0c700b3442abbe6e48f9588257bfd541c",
+          "lastWriteTimeUtc": "2026-09-03T19:45:10.0336501Z"
+        },
+        {
+          "path": "rastrigin_fitness.zebin",
+          "format": "zebin",
+          "bytes": 37144,
+          "sha256": "0bbce5feae7ec139355757f2c6ad1d20455690350395bc72e19bbee0d924c49c",
+          "lastWriteTimeUtc": "2026-09-03T19:45:08.9890679Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "snn_correlation",
+      "target": "lnl-m",
+      "sourcePath": "snn_correlation.cl",
+      "sourceSha256": "0a7e0e68d9306c611fe307b2534bce1db6237f7cbf3f3aca5fd3a8bb213543ce",
+      "entryPoints": [
+        "snn_correlation"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "snn_correlation.spv",
+          "format": "spv",
+          "bytes": 4860,
+          "sha256": "f7a98e8e9fb4db4e279d3a902773a4f447b8b7b85bc4fa79920e99487734beda",
+          "lastWriteTimeUtc": "2026-09-03T19:45:12.1550149Z"
+        },
+        {
+          "path": "snn_correlation.zebin",
+          "format": "zebin",
+          "bytes": 11272,
+          "sha256": "9e4e7f0aec81c454dcfd5ddb44de3a937787f89dc555f01e2f028876bd9a963b",
+          "lastWriteTimeUtc": "2026-09-03T19:45:11.2304725Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "snn_neuron_update",
+      "target": "lnl-m",
+      "sourcePath": "snn_neuron_update.cl",
+      "sourceSha256": "1b72dd1182e33d081dc7437f2761e62dd62095b005109a7dadb05ad2c6dcf5f7",
+      "entryPoints": [
+        "snn_neuron_update"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "snn_neuron_update.spv",
+          "format": "spv",
+          "bytes": 3152,
+          "sha256": "638136c74359c1f72ee0926c55eedc5621867833b04cf35eb4de9809b65e6812",
+          "lastWriteTimeUtc": "2026-09-03T19:45:14.0108996Z"
+        },
+        {
+          "path": "snn_neuron_update.zebin",
+          "format": "zebin",
+          "bytes": 9592,
+          "sha256": "17db3243f2268b765af1b6c84d419922dde6b71eb47302d2f679c08846e77841",
+          "lastWriteTimeUtc": "2026-09-03T19:45:13.1757028Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "stdp_plasticity",
+      "target": "lnl-m",
+      "sourcePath": "stdp_plasticity.cl",
+      "sourceSha256": "7dabdcc6ca821b5bfe8fd78ee907eccafc180564f1c845e81255efebc9ec771b",
+      "entryPoints": [
+        "stdp_plasticity",
+        "stdp_trace_decay"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "stdp_plasticity.spv",
+          "format": "spv",
+          "bytes": 5288,
+          "sha256": "465e6fa73ac6656c12b333e52d2a59e33dcf19c15e371c16ec1f1cb262893ed4",
+          "lastWriteTimeUtc": "2026-09-03T19:45:16.4210755Z"
+        },
+        {
+          "path": "stdp_plasticity.zebin",
+          "format": "zebin",
+          "bytes": 15712,
+          "sha256": "63ed93e522c9e1fb7dc031c0b8f046e61b5f1c2fb8009f55019d7577f3e26878",
+          "lastWriteTimeUtc": "2026-09-03T19:45:15.3391072Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    },
+    {
+      "id": "tile_placement",
+      "target": "lnl-m",
+      "sourcePath": "tile_placement.cl",
+      "sourceSha256": "0b063a5898f2eff8955c917c9dbe7236cee6c8432b69e355a44a54d67e8db57c",
+      "entryPoints": [
+        "tile_placement"
+      ],
+      "formats": [
+        "spv",
+        "zebin"
+      ],
+      "artifacts": [
+        {
+          "path": "tile_placement.spv",
+          "format": "spv",
+          "bytes": 4136,
+          "sha256": "d19dfb9270ac7fbe2f8b4e5ce6fd74e4f021ee3234dc3e6ae995c24abec2017e",
+          "lastWriteTimeUtc": "2026-09-03T19:45:18.4757373Z"
+        },
+        {
+          "path": "tile_placement.zebin",
+          "format": "zebin",
+          "bytes": 12408,
+          "sha256": "a8c4df6993d1e071c4da64b9bd49c5d4c4bd85d3ca50c3ecf5171c2c9daf0c00",
+          "lastWriteTimeUtc": "2026-09-03T19:45:17.5641196Z"
+        }
+      ],
+      "abiVersion": null,
+      "compiler": "ocloc:C:\\Program Files (x86)\\Intel\\oneAPI\\ocloc\\2025.1\\bin\\ocloc.exe",
+      "driver": null,
+      "inputs": [],
+      "outputs": [],
+      "precision": null,
+      "cpuFallback": null,
+      "dispatchThreshold": null,
+      "residencyClass": null
+    }
+  ]
+}

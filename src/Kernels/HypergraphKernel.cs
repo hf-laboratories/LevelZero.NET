@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated hypergraph scoring kernel.
@@ -6,6 +6,9 @@ namespace LevelZero.Kernels;
 /// </summary>
 public sealed class HypergraphKernel : IDisposable
 {
+    public const string DefaultKernelName = "hypergraph_score";
+    public const string LegacyKernelName = "hypergraph_score_kernel";
+
     private readonly ComputeDevice _device;
     private readonly ComputeModule _module;
     private readonly ComputeKernel _kernel;
@@ -20,24 +23,21 @@ public sealed class HypergraphKernel : IDisposable
     /// <summary>Creates a hypergraph kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static HypergraphKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("levelzero-hypergraph");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("levelzero-hypergraph");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for levelzero-hypergraph.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("levelzero-hypergraph");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
-    public static HypergraphKernel Create(ComputeDevice device, string spirvPath, string kernelName = "hypergraph_score")
+    public static HypergraphKernel Create(ComputeDevice device, string spirvPath, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = KernelEntrypointResolution.GetKernelWithFallback(module, kernelName, DefaultKernelName, LegacyKernelName);
         return new HypergraphKernel(device, module, kernel);
     }
 
-    public static HypergraphKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "hypergraph_score")
+    public static HypergraphKernel Create(ComputeDevice device, byte[] spirv, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = KernelEntrypointResolution.GetKernelWithFallback(module, kernelName, DefaultKernelName, LegacyKernelName);
         return new HypergraphKernel(device, module, kernel);
     }
 
@@ -48,14 +48,16 @@ public sealed class HypergraphKernel : IDisposable
     public float[] Score(float[] x, float[] y, float[] values, float a, float b, float c)
     {
         if (x.Length != y.Length || x.Length != values.Length)
+        {
             throw new ArgumentException("Input arrays must have matching lengths.");
+        }
 
         int count = x.Length;
 
-        using var xBuf = _device.AllocShared(x);
-        using var yBuf = _device.AllocShared(y);
-        using var vBuf = _device.AllocShared(values);
-        using var outBuf = _device.AllocShared<float>(count);
+        using SharedBuffer<float> xBuf = _device.AllocShared(x);
+        using SharedBuffer<float> yBuf = _device.AllocShared(y);
+        using SharedBuffer<float> vBuf = _device.AllocShared(values);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(count);
 
         _kernel.SetArgBuffer(0, xBuf);
         _kernel.SetArgBuffer(1, yBuf);
@@ -79,3 +81,4 @@ public sealed class HypergraphKernel : IDisposable
         _module.Dispose();
     }
 }
+

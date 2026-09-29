@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace LevelZero.Kernels;
 
@@ -7,6 +7,8 @@ namespace LevelZero.Kernels;
 /// </summary>
 public sealed class FitnessKernel : IDisposable
 {
+    public const string DefaultKernelName = "fitness_kernel";
+
     private readonly ComputeDevice _device;
     private readonly ComputeModule _module;
     private readonly ComputeKernel _kernel;
@@ -19,28 +21,33 @@ public sealed class FitnessKernel : IDisposable
     }
 
     /// <summary>Creates a fitness kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
-    public static FitnessKernel Create(ComputeDevice device, string kernelName = "fitness_kernel")
+    public static FitnessKernel Create(ComputeDevice device, string kernelName = DefaultKernelName)
     {
-        var path = KernelCatalog.ResolveSpirvPath("fitness_kernel");
-        if (path is not null) return Create(device, path, kernelName);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("fitness_kernel");
-        if (embedded is not null) return Create(device, embedded, kernelName);
-        throw new FileNotFoundException("SPIR-V not found for fitness_kernel.");
+        string? path = KernelCatalog.ResolveSpirvPath("fitness_kernel");
+        if (path is not null)
+        {
+            return Create(device, path, kernelName);
+        }
+
+        byte[]? embedded = KernelCatalog.LoadEmbeddedSpirv("fitness_kernel");
+        return embedded is not null
+            ? Create(device, embedded, kernelName)
+            : throw new FileNotFoundException("SPIR-V not found for fitness_kernel.");
     }
 
     /// <summary>Creates a fitness kernel from a SPIR-V file path.</summary>
-    public static FitnessKernel Create(ComputeDevice device, string spirvPath, string kernelName = "fitness_kernel")
+    public static FitnessKernel Create(ComputeDevice device, string spirvPath, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new FitnessKernel(device, module, kernel);
     }
 
     /// <summary>Creates a fitness kernel from SPIR-V bytes.</summary>
-    public static FitnessKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "fitness_kernel")
+    public static FitnessKernel Create(ComputeDevice device, byte[] spirv, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new FitnessKernel(device, module, kernel);
     }
 
@@ -53,8 +60,8 @@ public sealed class FitnessKernel : IDisposable
     /// <returns>float[count] fitness values.</returns>
     public float[] Evaluate(float[] positions, int count, int dimensions)
     {
-        using var posBuffer = _device.AllocShared(positions);
-        using var outBuffer = _device.AllocShared<float>(count);
+        using SharedBuffer<float> posBuffer = _device.AllocShared(positions);
+        using SharedBuffer<float> outBuffer = _device.AllocShared<float>(count);
 
         _kernel.SetArgBuffer(0, posBuffer);
         _kernel.SetArgInt(1, count);
@@ -74,3 +81,4 @@ public sealed class FitnessKernel : IDisposable
         _module.Dispose();
     }
 }
+

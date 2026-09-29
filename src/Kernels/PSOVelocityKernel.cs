@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace LevelZero.Kernels;
 
@@ -22,24 +22,21 @@ public sealed class PSOVelocityKernel : IDisposable
     /// <summary>Creates a PSO velocity kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static PSOVelocityKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("pso_velocity");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("pso_velocity");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for pso_velocity.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("pso_velocity");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static PSOVelocityKernel Create(ComputeDevice device, string spirvPath, string kernelName = "pso_velocity_update")
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new PSOVelocityKernel(device, module, kernel);
     }
 
     public static PSOVelocityKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "pso_velocity_update")
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new PSOVelocityKernel(device, module, kernel);
     }
 
@@ -52,11 +49,11 @@ public sealed class PSOVelocityKernel : IDisposable
     {
         int total = count * dims;
 
-        using var velBuf = _device.AllocShared(velocities);
-        using var posBuf = _device.AllocShared(positions);
-        using var pbBuf = _device.AllocShared(pBest);
-        using var gbBuf = _device.AllocShared(gBest);
-        using var rndBuf = _device.AllocShared(randoms);
+        using SharedBuffer<float> velBuf = _device.AllocShared(velocities);
+        using SharedBuffer<float> posBuf = _device.AllocShared(positions);
+        using SharedBuffer<float> pbBuf = _device.AllocShared(pBest);
+        using SharedBuffer<float> gbBuf = _device.AllocShared(gBest);
+        using SharedBuffer<float> rndBuf = _device.AllocShared(randoms);
 
         _kernel.SetArgBuffer(0, velBuf);
         _kernel.SetArgBuffer(1, posBuf);
@@ -85,3 +82,4 @@ public sealed class PSOVelocityKernel : IDisposable
         _module.Dispose();
     }
 }
+

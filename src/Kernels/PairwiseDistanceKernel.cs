@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated pairwise Euclidean distance computation.
@@ -23,26 +23,23 @@ public sealed class PairwiseDistanceKernel : IDisposable
     /// <summary>Creates a pairwise distance kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static PairwiseDistanceKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("pairwise_distance");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("pairwise_distance");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for pairwise_distance.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("pairwise_distance");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static PairwiseDistanceKernel Create(ComputeDevice device, string spirvPath, string kernelName = "pairwise_distance")
     {
-        var module = device.LoadModule(spirvPath);
-        var triangle = module.GetKernel(kernelName);
-        var matrix = module.TryGetKernel("pairwise_distance_matrix");
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel triangle = module.GetKernel(kernelName);
+        ComputeKernel? matrix = module.TryGetKernel("pairwise_distance_matrix");
         return new PairwiseDistanceKernel(device, module, triangle, matrix);
     }
 
     public static PairwiseDistanceKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "pairwise_distance")
     {
-        var module = device.LoadModule(spirv);
-        var triangle = module.GetKernel(kernelName);
-        var matrix = module.TryGetKernel("pairwise_distance_matrix");
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel triangle = module.GetKernel(kernelName);
+        ComputeKernel? matrix = module.TryGetKernel("pairwise_distance_matrix");
         return new PairwiseDistanceKernel(device, module, triangle, matrix);
     }
 
@@ -52,10 +49,13 @@ public sealed class PairwiseDistanceKernel : IDisposable
     public float[] EvaluateTriangle(float[] points, int pointCount, int dims)
     {
         int totalPairs = pointCount * (pointCount - 1) / 2;
-        if (totalPairs <= 0) return [];
+        if (totalPairs <= 0)
+        {
+            return [];
+        }
 
-        using var ptsBuf = _device.AllocShared(points);
-        using var outBuf = _device.AllocShared<float>(totalPairs);
+        using SharedBuffer<float> ptsBuf = _device.AllocShared(points);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(totalPairs);
 
         _triangleKernel.SetArgBuffer(0, ptsBuf);
         _triangleKernel.SetArgInt(1, pointCount);
@@ -77,8 +77,8 @@ public sealed class PairwiseDistanceKernel : IDisposable
     {
         if (_matrixKernel is not null)
         {
-            using var ptsBuf = _device.AllocShared(points);
-            using var outBuf = _device.AllocShared<float>(pointCount * pointCount);
+            using SharedBuffer<float> ptsBuf = _device.AllocShared(points);
+            using SharedBuffer<float> outBuf = _device.AllocShared<float>(pointCount * pointCount);
 
             _matrixKernel.SetArgBuffer(0, ptsBuf);
             _matrixKernel.SetArgInt(1, pointCount);
@@ -93,8 +93,8 @@ public sealed class PairwiseDistanceKernel : IDisposable
         }
 
         // Fallback: expand triangle to full matrix
-        var triangle = EvaluateTriangle(points, pointCount, dims);
-        var matrix = new float[pointCount * pointCount];
+        float[] triangle = EvaluateTriangle(points, pointCount, dims);
+        float[] matrix = new float[pointCount * pointCount];
         int k = 0;
         for (int i = 0; i < pointCount; i++)
         {
@@ -115,3 +115,4 @@ public sealed class PairwiseDistanceKernel : IDisposable
         _module.Dispose();
     }
 }
+

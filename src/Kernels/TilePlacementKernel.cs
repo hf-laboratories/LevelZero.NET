@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated tile placement cost-matrix computation.
@@ -20,24 +20,21 @@ public sealed class TilePlacementKernel : IDisposable
     /// <summary>Creates a tile placement kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static TilePlacementKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("tile_placement");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("tile_placement");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for tile_placement.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("tile_placement");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static TilePlacementKernel Create(ComputeDevice device, string spirvPath, string kernelName = "tile_placement_cost")
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new TilePlacementKernel(device, module, kernel);
     }
 
     public static TilePlacementKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "tile_placement_cost")
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new TilePlacementKernel(device, module, kernel);
     }
 
@@ -53,14 +50,14 @@ public sealed class TilePlacementKernel : IDisposable
         int agentCount, int tileCount,
         float latencyPerUnit)
     {
-        using var axBuf = _device.AllocShared(agentX);
-        using var ayBuf = _device.AllocShared(agentY);
-        using var txBuf = _device.AllocShared(tileX);
-        using var tyBuf = _device.AllocShared(tileY);
-        using var cwBuf = _device.AllocShared(commWeights);
-        using var tcBuf = _device.AllocShared(tileCapacity);
-        using var tuBuf = _device.AllocShared(tileUsed);
-        using var outBuf = _device.AllocShared<float>(agentCount * tileCount);
+        using SharedBuffer<float> axBuf = _device.AllocShared(agentX);
+        using SharedBuffer<float> ayBuf = _device.AllocShared(agentY);
+        using SharedBuffer<float> txBuf = _device.AllocShared(tileX);
+        using SharedBuffer<float> tyBuf = _device.AllocShared(tileY);
+        using SharedBuffer<float> cwBuf = _device.AllocShared(commWeights);
+        using SharedBuffer<int> tcBuf = _device.AllocShared(tileCapacity);
+        using SharedBuffer<int> tuBuf = _device.AllocShared(tileUsed);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(agentCount * tileCount);
 
         _kernel.SetArgBuffer(0, axBuf);
         _kernel.SetArgBuffer(1, ayBuf);
@@ -89,3 +86,4 @@ public sealed class TilePlacementKernel : IDisposable
         _module.Dispose();
     }
 }
+

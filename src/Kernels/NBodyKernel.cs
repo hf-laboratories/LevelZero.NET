@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated N-body repulsion force computation for force-directed graph layout.
@@ -19,24 +19,21 @@ public sealed class NBodyKernel : IDisposable
     /// <summary>Creates an N-body repulsion kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static NBodyKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("nbody_repulsion");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("nbody_repulsion");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for nbody_repulsion.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("nbody_repulsion");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static NBodyKernel Create(ComputeDevice device, string spirvPath, string kernelName = "nbody_repulsion")
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new NBodyKernel(device, module, kernel);
     }
 
     public static NBodyKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "nbody_repulsion")
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new NBodyKernel(device, module, kernel);
     }
 
@@ -45,10 +42,10 @@ public sealed class NBodyKernel : IDisposable
     /// </summary>
     public (float[] forceX, float[] forceY) Evaluate(float[] posX, float[] posY, int nodeCount, float repulsionK, float minDist)
     {
-        using var pxBuf = _device.AllocShared(posX);
-        using var pyBuf = _device.AllocShared(posY);
-        using var fxBuf = _device.AllocShared<float>(nodeCount);
-        using var fyBuf = _device.AllocShared<float>(nodeCount);
+        using SharedBuffer<float> pxBuf = _device.AllocShared(posX);
+        using SharedBuffer<float> pyBuf = _device.AllocShared(posY);
+        using SharedBuffer<float> fxBuf = _device.AllocShared<float>(nodeCount);
+        using SharedBuffer<float> fyBuf = _device.AllocShared<float>(nodeCount);
 
         _kernel.SetArgBuffer(0, pxBuf);
         _kernel.SetArgBuffer(1, pyBuf);
@@ -71,3 +68,4 @@ public sealed class NBodyKernel : IDisposable
         _module.Dispose();
     }
 }
+

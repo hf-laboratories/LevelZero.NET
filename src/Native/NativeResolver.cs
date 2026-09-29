@@ -1,16 +1,19 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace LevelZero.Native;
 
 /// <summary>
-/// Extracts embedded native DLLs (LevelZeroShim + ze_loader) to a cache directory
-/// and registers a NativeLibrary import resolver so P/Invoke finds them automatically.
+/// Extracts the native shim to a cache directory and registers a NativeLibrary
+/// import resolver so P/Invoke finds it automatically.
 /// Triggered once via <see cref="ModuleInitializerAttribute"/>.
 /// </summary>
 internal static class NativeResolver
 {
+    private const string IpuLoaderPathEnv = "IPU_L0_ZE_LOADER_PATH";
+    private const string LevelZeroLoaderPathEnv = "LEVELZERO_NET_ZE_LOADER_PATH";
+
     private static readonly object s_lock = new();
     private static string? s_extractDir;
     private static bool s_initialized;
@@ -20,10 +23,18 @@ internal static class NativeResolver
 #pragma warning restore CA2255
     internal static void Initialize()
     {
-        if (s_initialized) return;
+        if (s_initialized)
+        {
+            return;
+        }
+
         lock (s_lock)
         {
-            if (s_initialized) return;
+            if (s_initialized)
+            {
+                return;
+            }
+
             s_initialized = true;
             NativeLibrary.SetDllImportResolver(typeof(NativeResolver).Assembly, ResolveNativeLibrary);
         }
@@ -32,41 +43,47 @@ internal static class NativeResolver
     private static IntPtr ResolveNativeLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
         if (!string.Equals(libraryName, "LevelZeroShim", StringComparison.OrdinalIgnoreCase))
+        {
             return IntPtr.Zero;
+        }
 
-        var dir = EnsureExtracted();
+        string dir = EnsureExtracted();
 
         string shimFile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.Combine(dir, "LevelZeroShim.dll")
             : Path.Combine(dir, "libLevelZeroShim.so");
 
-        if (NativeLibrary.TryLoad(shimFile, out var handle))
-            return handle;
-
-        return IntPtr.Zero;
+        return NativeLibrary.TryLoad(shimFile, out nint handle) ? handle : nint.Zero;
     }
 
     /// <summary>
     /// Extracts embedded native DLLs to a version-stamped cache directory.
-    /// Only runs once — subsequent calls return the cached path.
+    /// Only runs once  subsequent calls return the cached path.
     /// </summary>
     private static string EnsureExtracted()
     {
-        if (s_extractDir is not null) return s_extractDir;
+        if (s_extractDir is not null)
+        {
+            return s_extractDir;
+        }
 
         lock (s_lock)
         {
-            if (s_extractDir is not null) return s_extractDir;
+            if (s_extractDir is not null)
+            {
+                return s_extractDir;
+            }
 
-            var asm = typeof(NativeResolver).Assembly;
-            var version = asm.GetName().Version?.ToString() ?? "0.0.0";
-            var cacheDir = Path.Combine(Path.GetTempPath(), "LevelZero.NET", version);
-            Directory.CreateDirectory(cacheDir);
+            Assembly asm = typeof(NativeResolver).Assembly;
+            string version = asm.GetName().Version?.ToString() ?? "0.0.0";
+            string rootDir = Path.Combine(Path.GetTempPath(), "LevelZero.NET");
+            string cacheDir = Path.Combine(rootDir, version);
+            PurgeStaleVersionDirectories(rootDir, version);
+            _ = Directory.CreateDirectory(cacheDir);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                ExtractResource(asm, "LevelZero.Native.ze_loader.dll",
-                    Path.Combine(cacheDir, "ze_loader.dll"));
+                PrepareWindowsZeLoader(asm, cacheDir);
                 ExtractResource(asm, "LevelZero.Native.LevelZeroShim.dll",
                     Path.Combine(cacheDir, "LevelZeroShim.dll"));
             }
@@ -81,25 +98,123 @@ internal static class NativeResolver
         }
     }
 
+    private static void PrepareWindowsZeLoader(Assembly assembly, string cacheDir)
+    {
+        string targetPath = Path.Combine(cacheDir, "ze_loader.dll");
+        string? overridePath = GetConfiguredLoaderPath();
+        if (overridePath is not null)
+        {
+            CopyFileReplacing(overridePath, targetPath);
+            return;
+        }
+
+        if (File.Exists(GetSystemZeLoaderPath()))
+        {
+            // Driver updates can make a previously cached bundled loader stale.
+            // Removing it lets Windows bind LevelZeroShim to the installed driver loader.
+            TryDelete(targetPath);
+            return;
+        }
+
+        ExtractResource(assembly, "LevelZero.Native.ze_loader.dll", targetPath);
+    }
+
+    private static string? GetConfiguredLoaderPath()
+    {
+        string? path = Environment.GetEnvironmentVariable(IpuLoaderPathEnv);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            path = Environment.GetEnvironmentVariable(LevelZeroLoaderPathEnv);
+        }
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        path = Environment.ExpandEnvironmentVariables(path.Trim('"'));
+        return File.Exists(path) ? path : null;
+    }
+
+    private static string GetSystemZeLoaderPath() =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "ze_loader.dll");
+
+    private static void CopyFileReplacing(string sourcePath, string targetPath)
+    {
+        string tempPath = targetPath + ".tmp";
+        try
+        {
+            File.Copy(sourcePath, tempPath, overwrite: true);
+            File.Move(tempPath, targetPath, overwrite: true);
+        }
+        finally
+        {
+            TryDelete(tempPath);
+        }
+    }
+
+    /// <summary>
+    /// Removes cache directories left behind by other assembly versions so driver or
+    /// packaging updates cannot keep serving a stale loader/shim. Best effort: files
+    /// locked by a live process are simply skipped.
+    /// </summary>
+    private static void PurgeStaleVersionDirectories(string rootDir, string currentVersion)
+    {
+        if (!Directory.Exists(rootDir))
+        {
+            return;
+        }
+
+        foreach (string dir in Directory.EnumerateDirectories(rootDir))
+        {
+            if (string.Equals(Path.GetFileName(dir), currentVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            try
+            { Directory.Delete(dir, recursive: true); }
+            catch { /* in use elsewhere — skip */ }
+        }
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        { File.Delete(path); }
+        catch { /* best effort */ }
+    }
+
     private static void ExtractResource(Assembly assembly, string resourceName, string targetPath)
     {
-        if (File.Exists(targetPath)) return;
+        if (File.Exists(targetPath))
+        {
+            return;
+        }
 
-        using var stream = assembly.GetManifestResourceStream(resourceName);
-        if (stream is null) return;
+        using Stream? stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            return;
+        }
 
-        var tempPath = targetPath + ".tmp";
+        string tempPath = targetPath + ".tmp";
         try
         {
             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
                 stream.CopyTo(fs);
+            }
 
             File.Move(tempPath, targetPath, overwrite: true);
         }
         catch (IOException)
         {
             // Another process may have written the file concurrently — that's fine
-            try { File.Delete(tempPath); } catch { /* best effort */ }
+            try
+            { File.Delete(tempPath); }
+            catch { /* best effort */ }
         }
     }
+
 }

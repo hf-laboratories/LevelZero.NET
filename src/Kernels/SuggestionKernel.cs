@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated suggestion scoring kernel.
@@ -6,6 +6,9 @@ namespace LevelZero.Kernels;
 /// </summary>
 public sealed class SuggestionKernel : IDisposable
 {
+    public const string DefaultKernelName = "score_kernel";
+    public const string LegacyKernelName = "suggestion_score";
+
     private readonly ComputeDevice _device;
     private readonly ComputeModule _module;
     private readonly ComputeKernel _kernel;
@@ -20,24 +23,21 @@ public sealed class SuggestionKernel : IDisposable
     /// <summary>Creates a suggestion kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static SuggestionKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("levelzero-score");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("levelzero-score");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for levelzero-score.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("levelzero-score");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
-    public static SuggestionKernel Create(ComputeDevice device, string spirvPath, string kernelName = "suggestion_score")
+    public static SuggestionKernel Create(ComputeDevice device, string spirvPath, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = KernelEntrypointResolution.GetKernelWithFallback(module, kernelName, DefaultKernelName, LegacyKernelName);
         return new SuggestionKernel(device, module, kernel);
     }
 
-    public static SuggestionKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "suggestion_score")
+    public static SuggestionKernel Create(ComputeDevice device, byte[] spirv, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = KernelEntrypointResolution.GetKernelWithFallback(module, kernelName, DefaultKernelName, LegacyKernelName);
         return new SuggestionKernel(device, module, kernel);
     }
 
@@ -50,13 +50,15 @@ public sealed class SuggestionKernel : IDisposable
     public float[] Score(float[] features, int count)
     {
         if (features.Length < count * 4)
+        {
             throw new ArgumentException("features array must be count*4 length", nameof(features));
+        }
 
         float[] weights = [4f, 5f, 2f, 3f];
 
-        using var featBuf = _device.AllocShared(features);
-        using var wBuf = _device.AllocShared(weights);
-        using var outBuf = _device.AllocShared<float>(count);
+        using SharedBuffer<float> featBuf = _device.AllocShared(features);
+        using SharedBuffer<float> wBuf = _device.AllocShared(weights);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(count);
 
         _kernel.SetArgBuffer(0, featBuf);
         _kernel.SetArgBuffer(1, wBuf);
@@ -76,3 +78,4 @@ public sealed class SuggestionKernel : IDisposable
         _module.Dispose();
     }
 }
+

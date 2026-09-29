@@ -40,56 +40,63 @@ public sealed class ComputeKernel : IDisposable
         SetArgBuffer(index, buffer.Pointer);
     }
 
-    /// <summary>Sets a scalar int kernel argument.</summary>
+    /// <summary>Sets a scalar int kernel argument with zero heap allocations.</summary>
     public void SetArgInt(uint index, int value)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var ptr = Marshal.AllocHGlobal(sizeof(int));
-        try
+        unsafe
         {
-            Marshal.WriteInt32(ptr, value);
             LevelZeroNative.EnsureSuccess(
-                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(int), ptr));
+                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(int), (nint)(&value)));
         }
-        finally { Marshal.FreeHGlobal(ptr); }
     }
 
-    /// <summary>Sets a scalar float kernel argument.</summary>
+    /// <summary>Sets a scalar float kernel argument with zero heap allocations.</summary>
     public void SetArgFloat(uint index, float value)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var ptr = Marshal.AllocHGlobal(sizeof(float));
-        try
+        unsafe
         {
-            Marshal.Copy(BitConverter.GetBytes(value), 0, ptr, sizeof(float));
             LevelZeroNative.EnsureSuccess(
-                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(float), ptr));
+                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(float), (nint)(&value)));
         }
-        finally { Marshal.FreeHGlobal(ptr); }
     }
 
-    /// <summary>Sets a scalar uint kernel argument.</summary>
+    /// <summary>Sets a scalar uint kernel argument with zero heap allocations.</summary>
     public void SetArgUInt(uint index, uint value)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var ptr = Marshal.AllocHGlobal(sizeof(uint));
-        try
+        unsafe
         {
-            Marshal.WriteInt32(ptr, unchecked((int)value));
             LevelZeroNative.EnsureSuccess(
-                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(uint), ptr));
+                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(uint), (nint)(&value)));
         }
-        finally { Marshal.FreeHGlobal(ptr); }
+    }
+
+    /// <summary>Sets a scalar double kernel argument with zero heap allocations.</summary>
+    public void SetArgDouble(uint index, double value)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        unsafe
+        {
+            LevelZeroNative.EnsureSuccess(
+                LevelZeroNative.lz_kernel_set_arg_value(_handle, index, (UIntPtr)sizeof(double), (nint)(&value)));
+        }
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
         if (_handle != IntPtr.Zero)
         {
-            LevelZeroNative.lz_kernel_destroy(_handle);
+            _ = LevelZeroNative.lz_kernel_destroy(_handle);
             _handle = IntPtr.Zero;
         }
     }
 }
+

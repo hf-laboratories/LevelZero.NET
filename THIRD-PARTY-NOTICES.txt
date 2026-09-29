@@ -1,0 +1,18 @@
+L0.NET PUBLIC COMPONENT NOTICE
+
+The HFLabs-authored source code and kernel artifacts included in the public
+L0.NET component boundary are licensed under the accompanying MIT license.
+This notice does not relicense third-party materials.
+
+The public package does not include the vendored SYCL toolchain, compiler
+distribution, or compiler headers/libraries. Those materials remain excluded
+from the public component boundary.
+
+The Level Zero API, headers, loader, and installed GPU driver are external
+dependencies. Consumers must obtain and use them under the applicable upstream
+terms. The public package does not grant rights to redistribute an Intel or
+other vendor driver/runtime.
+
+The HFLabs ABI shim is separate from the vendor Level Zero loader. Its source
+is included in this component boundary; the system Level Zero runtime remains
+a prerequisite for hardware execution.

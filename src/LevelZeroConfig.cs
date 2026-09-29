@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace LevelZero;
@@ -41,7 +41,7 @@ public sealed class LevelZeroConfig
     /// <summary>Saves this config to the specified path.</summary>
     public void Save(string path)
     {
-        var json = JsonSerializer.Serialize(this, s_jsonOptions);
+        string json = JsonSerializer.Serialize(this, s_jsonOptions);
         File.WriteAllText(path, json);
     }
 
@@ -49,8 +49,11 @@ public sealed class LevelZeroConfig
     public static LevelZeroConfig? Load(string path)
     {
         if (!File.Exists(path))
+        {
             return null;
-        var json = File.ReadAllText(path);
+        }
+
+        string json = File.ReadAllText(path);
         return JsonSerializer.Deserialize<LevelZeroConfig>(json, s_jsonOptions);
     }
 
@@ -59,3 +62,4 @@ public sealed class LevelZeroConfig
     /// </summary>
     public static string DefaultPath => Path.Combine(AppContext.BaseDirectory, FileName);
 }
+

@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace LevelZero.Kernels;
 
@@ -7,6 +7,9 @@ namespace LevelZero.Kernels;
 /// </summary>
 public sealed class CorrelationKernel : IDisposable
 {
+    public const string DefaultKernelName = "snn_correlation";
+    public const string LegacyKernelName = "spike_correlation";
+
     private readonly ComputeDevice _device;
     private readonly ComputeModule _module;
     private readonly ComputeKernel _kernel;
@@ -21,24 +24,21 @@ public sealed class CorrelationKernel : IDisposable
     /// <summary>Creates a correlation kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static CorrelationKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("snn_correlation");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("snn_correlation");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for snn_correlation.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("snn_correlation");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
-    public static CorrelationKernel Create(ComputeDevice device, string spirvPath, string kernelName = "snn_correlation")
+    public static CorrelationKernel Create(ComputeDevice device, string spirvPath, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = KernelEntrypointResolution.GetKernelWithFallback(module, kernelName, DefaultKernelName, LegacyKernelName);
         return new CorrelationKernel(device, module, kernel);
     }
 
-    public static CorrelationKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "snn_correlation")
+    public static CorrelationKernel Create(ComputeDevice device, byte[] spirv, string kernelName = DefaultKernelName)
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = KernelEntrypointResolution.GetKernelWithFallback(module, kernelName, DefaultKernelName, LegacyKernelName);
         return new CorrelationKernel(device, module, kernel);
     }
 
@@ -54,9 +54,9 @@ public sealed class CorrelationKernel : IDisposable
     {
         int matrixSize = numGroups * numGroups;
 
-        using var stBuf = _device.AllocShared(spikeTimes);
-        using var goBuf = _device.AllocShared(groupOffsets);
-        using var outBuf = _device.AllocShared<float>(matrixSize);
+        using SharedBuffer<float> stBuf = _device.AllocShared(spikeTimes);
+        using SharedBuffer<int> goBuf = _device.AllocShared(groupOffsets);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(matrixSize);
 
         _kernel.SetArgBuffer(0, stBuf);
         _kernel.SetArgBuffer(1, goBuf);
@@ -79,3 +79,4 @@ public sealed class CorrelationKernel : IDisposable
         _module.Dispose();
     }
 }
+

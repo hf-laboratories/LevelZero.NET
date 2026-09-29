@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated firefly attraction and flash coupling dynamics.
@@ -25,28 +25,25 @@ public sealed class FireflyAttractionKernel : IDisposable
     /// <summary>Creates a firefly attraction kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static FireflyAttractionKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("firefly_attraction");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("firefly_attraction");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for firefly_attraction.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("firefly_attraction");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static FireflyAttractionKernel Create(ComputeDevice device, string spirvPath, string kernelName = "flash_coupling")
     {
-        var module = device.LoadModule(spirvPath);
-        var flash = module.GetKernel(kernelName);
-        var attraction = module.TryGetKernel("firefly_attraction");
-        var kuramoto = module.TryGetKernel("kuramoto_components");
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel flash = module.GetKernel(kernelName);
+        ComputeKernel? attraction = module.TryGetKernel("firefly_attraction");
+        ComputeKernel? kuramoto = module.TryGetKernel("kuramoto_components");
         return new FireflyAttractionKernel(device, module, flash, attraction, kuramoto);
     }
 
     public static FireflyAttractionKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "flash_coupling")
     {
-        var module = device.LoadModule(spirv);
-        var flash = module.GetKernel(kernelName);
-        var attraction = module.TryGetKernel("firefly_attraction");
-        var kuramoto = module.TryGetKernel("kuramoto_components");
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel flash = module.GetKernel(kernelName);
+        ComputeKernel? attraction = module.TryGetKernel("firefly_attraction");
+        ComputeKernel? kuramoto = module.TryGetKernel("kuramoto_components");
         return new FireflyAttractionKernel(device, module, flash, attraction, kuramoto);
     }
 
@@ -58,11 +55,11 @@ public sealed class FireflyAttractionKernel : IDisposable
         float[] positions, float[] phases, float[] intensities, int[] flashMask,
         int count, int dims, float couplingK, float flashRadius, float deltaTime)
     {
-        using var posBuf = _device.AllocShared(positions);
-        using var phBuf = _device.AllocShared(phases);
-        using var intBuf = _device.AllocShared(intensities);
-        using var maskBuf = _device.AllocShared(flashMask);
-        using var outBuf = _device.AllocShared<float>(count);
+        using SharedBuffer<float> posBuf = _device.AllocShared(positions);
+        using SharedBuffer<float> phBuf = _device.AllocShared(phases);
+        using SharedBuffer<float> intBuf = _device.AllocShared(intensities);
+        using SharedBuffer<int> maskBuf = _device.AllocShared(flashMask);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(count);
 
         _flashCouplingKernel.SetArgBuffer(0, posBuf);
         _flashCouplingKernel.SetArgBuffer(1, phBuf);
@@ -91,11 +88,13 @@ public sealed class FireflyAttractionKernel : IDisposable
         int count, int dims, float beta0, float gamma)
     {
         if (_attractionKernel is null)
+        {
             throw new InvalidOperationException("Attraction kernel not available in this module");
+        }
 
-        using var posBuf = _device.AllocShared(positions);
-        using var intBuf = _device.AllocShared(intensities);
-        using var outBuf = _device.AllocShared<float>(count * dims);
+        using SharedBuffer<float> posBuf = _device.AllocShared(positions);
+        using SharedBuffer<float> intBuf = _device.AllocShared(intensities);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(count * dims);
 
         _attractionKernel.SetArgBuffer(0, posBuf);
         _attractionKernel.SetArgBuffer(1, intBuf);
@@ -119,11 +118,13 @@ public sealed class FireflyAttractionKernel : IDisposable
     public (float[] cosVals, float[] sinVals) ComputeKuramotoComponents(float[] phases, int count)
     {
         if (_kuramotoKernel is null)
+        {
             throw new InvalidOperationException("Kuramoto kernel not available in this module");
+        }
 
-        using var phBuf = _device.AllocShared(phases);
-        using var cosBuf = _device.AllocShared<float>(count);
-        using var sinBuf = _device.AllocShared<float>(count);
+        using SharedBuffer<float> phBuf = _device.AllocShared(phases);
+        using SharedBuffer<float> cosBuf = _device.AllocShared<float>(count);
+        using SharedBuffer<float> sinBuf = _device.AllocShared<float>(count);
 
         _kuramotoKernel.SetArgBuffer(0, phBuf);
         _kuramotoKernel.SetArgInt(1, count);
@@ -145,3 +146,4 @@ public sealed class FireflyAttractionKernel : IDisposable
         _module.Dispose();
     }
 }
+

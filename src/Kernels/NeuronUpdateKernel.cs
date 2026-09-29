@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace LevelZero.Kernels;
 
@@ -21,24 +21,21 @@ public sealed class NeuronUpdateKernel : IDisposable
     /// <summary>Creates a neuron update kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static NeuronUpdateKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("snn_neuron_update");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("snn_neuron_update");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for snn_neuron_update.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("snn_neuron_update");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static NeuronUpdateKernel Create(ComputeDevice device, string spirvPath, string kernelName = "snn_neuron_update")
     {
-        var module = device.LoadModule(spirvPath);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new NeuronUpdateKernel(device, module, kernel);
     }
 
     public static NeuronUpdateKernel Create(ComputeDevice device, byte[] spirv, string kernelName = "snn_neuron_update")
     {
-        var module = device.LoadModule(spirv);
-        var kernel = module.GetKernel(kernelName);
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel kernel = module.GetKernel(kernelName);
         return new NeuronUpdateKernel(device, module, kernel);
     }
 
@@ -49,10 +46,10 @@ public sealed class NeuronUpdateKernel : IDisposable
     public int[] Evaluate(float[] potentials, int[] refractoryCounters, float[] inputs,
                           int neuronCount, float leak, float threshold, float resetValue, int refractoryPhases)
     {
-        using var potBuf = _device.AllocShared(potentials);
-        using var refBuf = _device.AllocShared(refractoryCounters);
-        using var inBuf = _device.AllocShared(inputs);
-        using var spkBuf = _device.AllocShared<int>(neuronCount);
+        using SharedBuffer<float> potBuf = _device.AllocShared(potentials);
+        using SharedBuffer<int> refBuf = _device.AllocShared(refractoryCounters);
+        using SharedBuffer<float> inBuf = _device.AllocShared(inputs);
+        using SharedBuffer<int> spkBuf = _device.AllocShared<int>(neuronCount);
 
         _kernel.SetArgBuffer(0, potBuf);
         _kernel.SetArgBuffer(1, refBuf);
@@ -80,3 +77,4 @@ public sealed class NeuronUpdateKernel : IDisposable
         _module.Dispose();
     }
 }
+

@@ -1,4 +1,4 @@
-using LevelZero.Native;
+﻿using LevelZero.Native;
 
 namespace LevelZero;
 
@@ -30,7 +30,7 @@ public sealed class ComputeModule : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         LevelZeroNative.EnsureSuccess(
-            LevelZeroNative.lz_kernel_create(_handle, name, out var kernel));
+            LevelZeroNative.lz_kernel_create(_handle, name, out nint kernel));
         return new ComputeKernel(kernel);
     }
 
@@ -40,18 +40,23 @@ public sealed class ComputeModule : IDisposable
     public ComputeKernel? TryGetKernel(string name)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var result = LevelZeroNative.lz_kernel_create(_handle, name, out var kernel);
+        int result = LevelZeroNative.lz_kernel_create(_handle, name, out nint kernel);
         return result == 0 ? new ComputeKernel(kernel) : null;
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
         if (_handle != IntPtr.Zero)
         {
-            LevelZeroNative.lz_module_destroy(_handle);
+            _ = LevelZeroNative.lz_module_destroy(_handle);
             _handle = IntPtr.Zero;
         }
     }
 }
+

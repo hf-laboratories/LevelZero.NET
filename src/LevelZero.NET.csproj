@@ -9,18 +9,17 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <IsPackable>true</IsPackable>
     <PackageId>LevelZero.NET</PackageId>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Authors>HFLabs</Authors>
     <Company>HF Laboratories</Company>
     <Copyright>Copyright (c) 2025-2026 HF Laboratories</Copyright>
-    <Description>Managed .NET wrapper for Intel Level Zero GPU compute with built-in kernel catalog for swarm optimization, SNN, and multi-objective algorithms.</Description>
-    <PackageTags>gpu;compute;level-zero;spirv;opencl;intel;dotnet;snn;spiking-neural-network</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>Managed .NET wrapper for Intel Level Zero GPU compute with built-in native-module (.zebin) and SPIR-V kernel catalog support for Transformer LLM inference, swarm optimization, SNN, and multi-objective algorithms across 11 Intel architectures.</Description>
+    <PackageTags>gpu;compute;level-zero;zebin;native-module;spirv;opencl;intel;dotnet;llm;transformer;sdpa;rope;rmsnorm;snn;spiking-neural-network;arc;lunar-lake;battlemage</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/hf-laboratories/LevelZero.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/hf-laboratories/LevelZero.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -31,23 +30,30 @@
 
   <!-- NuGet package content files -->
   <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="\" />
-    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" Condition="Exists('README.md')" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Core -->
     <Compile Include="LevelZeroRuntime.cs" />
     <Compile Include="LevelZeroException.cs" />
+    <Compile Include="LevelZeroModuleFormat.cs" />
     <Compile Include="ComputeDevice.cs" />
     <Compile Include="ComputeModule.cs" />
     <Compile Include="ComputeKernel.cs" />
     <Compile Include="SharedBuffer.cs" />
+    <Compile Include="SharedBufferPool.cs" />
     <Compile Include="KernelCatalog.cs" />
     <Compile Include="LevelZeroConfig.cs" />
     <Compile Include="DeviceCapabilityDetector.cs" />
+    <Compile Include="ComputeKernelExtensions.cs" />
+    <Compile Include="TensorDescriptor.cs" />
     <!-- Native P/Invoke -->
     <Compile Include="Native\LevelZeroNative.cs" />
+    <Compile Include="Native\L0SysmanInterop.cs" />
     <Compile Include="Native\NativeResolver.cs" />
     <!-- High-level kernel wrappers -->
     <Compile Include="Kernels\FitnessKernel.cs" />
@@ -61,64 +67,116 @@
     <Compile Include="Kernels\FireflyAttractionKernel.cs" />
     <Compile Include="Kernels\MonteCarloHypervolumeKernel.cs" />
     <Compile Include="Kernels\PairwiseDistanceKernel.cs" />
+    <Compile Include="Kernels\DeMutationKernel.cs" />
+    <Compile Include="Kernels\AcoTransitionKernel.cs" />
+    <Compile Include="Kernels\CovarianceUpdateKernel.cs" />
     <Compile Include="Kernels\TilePlacementKernel.cs" />
+    <Compile Include="Kernels\IGDPlusKernel.cs" />
     <Compile Include="Kernels\HypergraphKernel.cs" />
     <Compile Include="Kernels\SuggestionKernel.cs" />
+    <Compile Include="Kernels\RankerPrepKernel.cs" />
+    <Compile Include="Kernels\ChainBoostKernel.cs" />
+    <Compile Include="Kernels\LlmKernelSuite.cs" />
+    <Compile Include="Kernels\LlmEmbeddingKernel.cs" />
+    <Compile Include="Kernels\LlmRMSNormKernel.cs" />
+    <Compile Include="Kernels\LlmGemmKernel.cs" />
+    <Compile Include="Kernels\LlmGemvKernel.cs" />
+    <Compile Include="Kernels\LlmCopyKernel.cs" />
+    <Compile Include="Kernels\LlmRoPEKernel.cs" />
+    <Compile Include="Kernels\LlmSwiGLUKernel.cs" />
+    <Compile Include="Kernels\LlmAttentionKernel.cs" />
+    <Compile Include="Kernels\LlmSamplingKernel.cs" />
+    <Compile Include="Kernels\LlmBiasAddKernel.cs" />
+    <Compile Include="Kernels\LlmAddKernel.cs" />
+    <Compile Include="Kernels\LlmKvCacheStoreKernel.cs" />
+    <Compile Include="Kernels\LlmLinearAttentionKernels.cs" />
+    <Compile Include="Kernels\LlmQuantKernels.cs" />
+    <Compile Include="Kernels\LlmQ8Quantizer.cs" />
+    <Compile Include="Kernels\GraphRagVectorSearchKernel.cs" />
+    <Compile Include="Kernels\PixieWorkerPipeline.cs" />
+    <Compile Include="Kernels\KernelSpirvResolution.cs" />
   </ItemGroup>
 
-  <!-- Bundled SPIR-V kernels for all supported device targets -->
+  <!-- Bundled Level Zero kernel artifacts for all supported device targets -->
   <PropertyGroup>
-    <SpirvBaseDir>$(MSBuildThisFileDirectory)..\artifacts\levelzero\</SpirvBaseDir>
+    <KernelArtifactBaseDir>$(MSBuildThisFileDirectory)..\LevelZero.Kernels.Bin\</KernelArtifactBaseDir>
   </PropertyGroup>
 
-  <!-- Device-specific embedded resources: LevelZero.Kernels.{device}.{kernel}.spv -->
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)tgllp')">
-    <EmbeddedResource Include="$(SpirvBaseDir)tgllp\*.spv" LogicalName="LevelZero.Kernels.tgllp.%(Filename).spv" />
+  <!-- Device-specific embedded resources: LevelZero.Kernels.{device}.{kernel}.{extension} -->
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)tgllp')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)tgllp\*.zebin;$(KernelArtifactBaseDir)tgllp\*.bin;$(KernelArtifactBaseDir)tgllp\*.native;$(KernelArtifactBaseDir)tgllp\*.spv" LogicalName="LevelZero.Kernels.tgllp.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)dg1')">
-    <EmbeddedResource Include="$(SpirvBaseDir)dg1\*.spv" LogicalName="LevelZero.Kernels.dg1.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)dg1')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)dg1\*.zebin;$(KernelArtifactBaseDir)dg1\*.bin;$(KernelArtifactBaseDir)dg1\*.native;$(KernelArtifactBaseDir)dg1\*.spv" LogicalName="LevelZero.Kernels.dg1.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)acm-g10')">
-    <EmbeddedResource Include="$(SpirvBaseDir)acm-g10\*.spv" LogicalName="LevelZero.Kernels.acm-g10.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)acm-g10')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)acm-g10\*.zebin;$(KernelArtifactBaseDir)acm-g10\*.bin;$(KernelArtifactBaseDir)acm-g10\*.native;$(KernelArtifactBaseDir)acm-g10\*.spv" LogicalName="LevelZero.Kernels.acm-g10.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)acm-g11')">
-    <EmbeddedResource Include="$(SpirvBaseDir)acm-g11\*.spv" LogicalName="LevelZero.Kernels.acm-g11.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)acm-g11')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)acm-g11\*.zebin;$(KernelArtifactBaseDir)acm-g11\*.bin;$(KernelArtifactBaseDir)acm-g11\*.native;$(KernelArtifactBaseDir)acm-g11\*.spv" LogicalName="LevelZero.Kernels.acm-g11.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)acm-g12')">
-    <EmbeddedResource Include="$(SpirvBaseDir)acm-g12\*.spv" LogicalName="LevelZero.Kernels.acm-g12.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)acm-g12')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)acm-g12\*.zebin;$(KernelArtifactBaseDir)acm-g12\*.bin;$(KernelArtifactBaseDir)acm-g12\*.native;$(KernelArtifactBaseDir)acm-g12\*.spv" LogicalName="LevelZero.Kernels.acm-g12.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)pvc')">
-    <EmbeddedResource Include="$(SpirvBaseDir)pvc\*.spv" LogicalName="LevelZero.Kernels.pvc.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)pvc')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)pvc\*.zebin;$(KernelArtifactBaseDir)pvc\*.bin;$(KernelArtifactBaseDir)pvc\*.native;$(KernelArtifactBaseDir)pvc\*.spv" LogicalName="LevelZero.Kernels.pvc.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)mtl')">
-    <EmbeddedResource Include="$(SpirvBaseDir)mtl\*.spv" LogicalName="LevelZero.Kernels.mtl.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)mtl')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)mtl\*.zebin;$(KernelArtifactBaseDir)mtl\*.bin;$(KernelArtifactBaseDir)mtl\*.native;$(KernelArtifactBaseDir)mtl\*.spv" LogicalName="LevelZero.Kernels.mtl.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)arl-h')">
-    <EmbeddedResource Include="$(SpirvBaseDir)arl-h\*.spv" LogicalName="LevelZero.Kernels.arl-h.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)arl-h')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)arl-h\*.zebin;$(KernelArtifactBaseDir)arl-h\*.bin;$(KernelArtifactBaseDir)arl-h\*.native;$(KernelArtifactBaseDir)arl-h\*.spv" LogicalName="LevelZero.Kernels.arl-h.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)bmg-g21')">
-    <EmbeddedResource Include="$(SpirvBaseDir)bmg-g21\*.spv" LogicalName="LevelZero.Kernels.bmg-g21.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)bmg-g21')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)bmg-g21\*.zebin;$(KernelArtifactBaseDir)bmg-g21\*.bin;$(KernelArtifactBaseDir)bmg-g21\*.native;$(KernelArtifactBaseDir)bmg-g21\*.spv" LogicalName="LevelZero.Kernels.bmg-g21.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)lnl-m')">
-    <EmbeddedResource Include="$(SpirvBaseDir)lnl-m\*.spv" LogicalName="LevelZero.Kernels.lnl-m.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)lnl-m')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)lnl-m\*.zebin;$(KernelArtifactBaseDir)lnl-m\*.bin;$(KernelArtifactBaseDir)lnl-m\*.native;$(KernelArtifactBaseDir)lnl-m\*.spv" LogicalName="LevelZero.Kernels.lnl-m.%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup Condition="Exists('$(SpirvBaseDir)ptl-h')">
-    <EmbeddedResource Include="$(SpirvBaseDir)ptl-h\*.spv" LogicalName="LevelZero.Kernels.ptl-h.%(Filename).spv" />
+  <ItemGroup Condition="Exists('$(KernelArtifactBaseDir)ptl-h')">
+    <EmbeddedResource Include="$(KernelArtifactBaseDir)ptl-h\*.zebin;$(KernelArtifactBaseDir)ptl-h\*.bin;$(KernelArtifactBaseDir)ptl-h\*.native;$(KernelArtifactBaseDir)ptl-h\*.spv" LogicalName="LevelZero.Kernels.ptl-h.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+    <!-- Auxiliary kernels currently ship under SwarmAlgorithms/Suggestions
+      and LevelZero.Kernels.Bin. Embed them as tgllp fallback resources so LevelZero.NET can load
+       native modules first, then SPIR-V, without external files. -->
+  <ItemGroup>
+      <EmbeddedResource Include="$(KernelArtifactBaseDir)levelzero-hypergraph.*"
+            Exclude="$(KernelArtifactBaseDir)levelzero-hypergraph.cl"
+                      LogicalName="LevelZero.Kernels.tgllp.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-score.*"
+                      Exclude="$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-score.cl;$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-score.bc"
+                      LogicalName="LevelZero.Kernels.tgllp.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-rankerprep.*"
+                      Exclude="$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-rankerprep.cl"
+                      LogicalName="LevelZero.Kernels.tgllp.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-chainboost.*"
+                      Exclude="$(MSBuildThisFileDirectory)..\..\SwarmAlgorithms\Suggestions\levelzero-chainboost.cl"
+                      LogicalName="LevelZero.Kernels.tgllp.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!-- Native DLLs: embedded in the assembly, extracted at runtime -->
   <PropertyGroup>
-    <NativeShimDir>$(MSBuildThisFileDirectory)..\native\</NativeShimDir>
+    <NativeShimDir>$(MSBuildThisFileDirectory)..\LevelZero.ABI-Shim\</NativeShimDir>
+    <NativeShimBuildDir>$(NativeShimDir)build\</NativeShimBuildDir>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <EmbeddedResource Include="$(NativeShimDir)LevelZeroShim.dll" Condition="Exists('$(NativeShimDir)LevelZeroShim.dll')"
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' and Exists('$(NativeShimBuildDir)LevelZeroShim.dll')">
+    <EmbeddedResource Include="$(NativeShimBuildDir)LevelZeroShim.dll"
                       LogicalName="LevelZero.Native.LevelZeroShim.dll" />
-    <EmbeddedResource Include="$(NativeShimDir)ze_loader.dll" Condition="Exists('$(NativeShimDir)ze_loader.dll')"
-                      LogicalName="LevelZero.Native.ze_loader.dll" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' and !Exists('$(NativeShimBuildDir)LevelZeroShim.dll')">
+    <EmbeddedResource Include="$(NativeShimDir)LevelZeroShim.dll" Condition="Exists('$(NativeShimDir)LevelZeroShim.dll')"
+                      LogicalName="LevelZero.Native.LevelZeroShim.dll" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT' and Exists('$(NativeShimBuildDir)libLevelZeroShim.so')">
+    <EmbeddedResource Include="$(NativeShimBuildDir)libLevelZeroShim.so"
+                      LogicalName="LevelZero.Native.libLevelZeroShim.so" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT' and !Exists('$(NativeShimBuildDir)libLevelZeroShim.so')">
     <EmbeddedResource Include="$(NativeShimDir)libLevelZeroShim.so" Condition="Exists('$(NativeShimDir)libLevelZeroShim.so')"
                       LogicalName="LevelZero.Native.libLevelZeroShim.so" />
   </ItemGroup>

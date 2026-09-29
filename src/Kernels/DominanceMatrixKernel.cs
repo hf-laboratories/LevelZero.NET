@@ -1,4 +1,4 @@
-namespace LevelZero.Kernels;
+﻿namespace LevelZero.Kernels;
 
 /// <summary>
 /// GPU-accelerated dominance counting and matrix computation for multi-objective optimization.
@@ -25,28 +25,25 @@ public sealed class DominanceMatrixKernel : IDisposable
     /// <summary>Creates a dominance matrix kernel, auto-resolving SPIR-V from disk or embedded resources.</summary>
     public static DominanceMatrixKernel Create(ComputeDevice device)
     {
-        var path = KernelCatalog.ResolveSpirvPath("dominance_matrix");
-        if (path is not null) return Create(device, path);
-        var embedded = KernelCatalog.LoadEmbeddedSpirv("dominance_matrix");
-        if (embedded is not null) return Create(device, embedded);
-        throw new FileNotFoundException("SPIR-V not found for dominance_matrix.");
+        var (path, embedded) = KernelSpirvResolution.Resolve("dominance_matrix");
+        return path is not null ? Create(device, path) : Create(device, embedded!);
     }
 
     public static DominanceMatrixKernel Create(ComputeDevice device, string spirvPath, string primaryKernelName = "dominance_count")
     {
-        var module = device.LoadModule(spirvPath);
-        var count = module.GetKernel(primaryKernelName);
-        var matrix = module.TryGetKernel("dominance_matrix");
-        var minDist = module.TryGetKernel("min_distance_to_set");
+        ComputeModule module = device.LoadModule(spirvPath);
+        ComputeKernel count = module.GetKernel(primaryKernelName);
+        ComputeKernel? matrix = module.TryGetKernel("dominance_matrix");
+        ComputeKernel? minDist = module.TryGetKernel("min_distance_to_set");
         return new DominanceMatrixKernel(device, module, count, matrix, minDist);
     }
 
     public static DominanceMatrixKernel Create(ComputeDevice device, byte[] spirv, string primaryKernelName = "dominance_count")
     {
-        var module = device.LoadModule(spirv);
-        var count = module.GetKernel(primaryKernelName);
-        var matrix = module.TryGetKernel("dominance_matrix");
-        var minDist = module.TryGetKernel("min_distance_to_set");
+        ComputeModule module = device.LoadModule(spirv);
+        ComputeKernel count = module.GetKernel(primaryKernelName);
+        ComputeKernel? matrix = module.TryGetKernel("dominance_matrix");
+        ComputeKernel? minDist = module.TryGetKernel("min_distance_to_set");
         return new DominanceMatrixKernel(device, module, count, matrix, minDist);
     }
 
@@ -55,8 +52,8 @@ public sealed class DominanceMatrixKernel : IDisposable
     /// </summary>
     public int[] ComputeDominationCounts(float[] objectives, int solCount, int objCount)
     {
-        using var objBuf = _device.AllocShared(objectives);
-        using var outBuf = _device.AllocShared<int>(solCount);
+        using SharedBuffer<float> objBuf = _device.AllocShared(objectives);
+        using SharedBuffer<int> outBuf = _device.AllocShared<int>(solCount);
 
         _countKernel.SetArgBuffer(0, objBuf);
         _countKernel.SetArgInt(1, solCount);
@@ -77,12 +74,14 @@ public sealed class DominanceMatrixKernel : IDisposable
     public int[] ComputeDominanceMatrix(float[] objectives, int solCount, int objCount)
     {
         if (_matrixKernel is null)
+        {
             return ComputeDominationCounts(objectives, solCount, objCount);
+        }
 
         int totalPairs = solCount * (solCount - 1) / 2;
 
-        using var objBuf = _device.AllocShared(objectives);
-        using var outBuf = _device.AllocShared<int>(solCount * solCount);
+        using SharedBuffer<float> objBuf = _device.AllocShared(objectives);
+        using SharedBuffer<int> outBuf = _device.AllocShared<int>(solCount * solCount);
 
         _matrixKernel.SetArgBuffer(0, objBuf);
         _matrixKernel.SetArgInt(1, solCount);
@@ -103,11 +102,13 @@ public sealed class DominanceMatrixKernel : IDisposable
                                        int solCount, int refCount, int objCount)
     {
         if (_minDistKernel is null)
+        {
             throw new InvalidOperationException("min_distance_to_set kernel not available in this module");
+        }
 
-        using var solBuf = _device.AllocShared(solutions);
-        using var refBuf = _device.AllocShared(referenceSet);
-        using var outBuf = _device.AllocShared<float>(refCount);
+        using SharedBuffer<float> solBuf = _device.AllocShared(solutions);
+        using SharedBuffer<float> refBuf = _device.AllocShared(referenceSet);
+        using SharedBuffer<float> outBuf = _device.AllocShared<float>(refCount);
 
         _minDistKernel.SetArgBuffer(0, solBuf);
         _minDistKernel.SetArgBuffer(1, refBuf);
@@ -131,3 +132,4 @@ public sealed class DominanceMatrixKernel : IDisposable
         _module.Dispose();
     }
 }
+

@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using LevelZero.Native;
 
 namespace LevelZero;
@@ -35,7 +35,9 @@ public sealed class SharedBuffer<T> : IDisposable where T : unmanaged
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (source.Length > _count)
+        {
             throw new ArgumentException($"Source length {source.Length} exceeds buffer capacity {_count}");
+        }
 
         unsafe
         {
@@ -52,7 +54,9 @@ public sealed class SharedBuffer<T> : IDisposable where T : unmanaged
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (destination.Length < _count)
+        {
             throw new ArgumentException($"Destination length {destination.Length} is smaller than buffer count {_count}");
+        }
 
         unsafe
         {
@@ -71,12 +75,17 @@ public sealed class SharedBuffer<T> : IDisposable where T : unmanaged
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
         if (_ptr != IntPtr.Zero)
         {
-            LevelZeroNative.lz_usm_free(_contextHandle, _ptr);
+            _ = LevelZeroNative.lz_usm_free(_contextHandle, _ptr);
             _ptr = IntPtr.Zero;
         }
     }
 }
+
