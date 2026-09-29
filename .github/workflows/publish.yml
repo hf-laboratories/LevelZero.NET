@@ -58,17 +58,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: NuGet login (OIDC Trusted Publishing)
+        id: login
+        uses: NuGet/login@v1
+
       - name: Push to NuGet
-        env:
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          if [ -n "$NUGET_KEY" ]; then
-            dotnet nuget push ./nupkgs/*.nupkg \
-              --api-key "$NUGET_KEY" \
-              --source https://api.nuget.org/v3/index.json \
-              --skip-duplicate
-          else
-            dotnet nuget push ./nupkgs/*.nupkg \
-              --source https://api.nuget.org/v3/index.json \
-              --skip-duplicate
-          fi
+          dotnet nuget push ./nupkgs/*.nupkg \
+            --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
