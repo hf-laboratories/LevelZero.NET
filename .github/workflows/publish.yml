@@ -61,6 +61,8 @@ jobs:
       - name: NuGet login (OIDC Trusted Publishing)
         id: login
         uses: NuGet/login@v1
+        with:
+          user: HF.Labs
 
       - name: Push to NuGet
         run: |
