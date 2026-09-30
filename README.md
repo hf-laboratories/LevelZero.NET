@@ -59,6 +59,7 @@ buffer.CopyTo(hostData);
 * **`HFLabs.LevelZero.Kernels.<target>`** — Dedicated binary packages containing pre-compiled `.zebin` and `.spv` modules for specific Intel architectures (e.g. `HFLabs.LevelZero.Kernels.tgllp`, `HFLabs.LevelZero.Kernels.acm-g10`).
 * **`HFLabs.ML.Agentic`** — Zero-dependency multi-agent orchestration, MCP, and A2A protocols for .NET.
 * **`l0llm`** — Self-contained command line LLM inference engine and OpenAI-compatible REST server.
+* **[`l0check`](https://github.com/hf-laboratories/l0check)** — Command line diagnostics tool that checks Level Zero availability, devices and the driver on a machine.
 
 ---
 
