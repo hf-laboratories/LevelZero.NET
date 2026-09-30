@@ -66,3 +66,17 @@ buffer.CopyTo(hostData);
 
 * **Community / Research License:** Free for open-source development, academic research, and evaluation.
 * **Commercial License:** Required for embedding in proprietary or commercial desktop/server software. Contact alix@HFLabs.dev for commercial licensing and custom kernel engineering services.
+
+## Trademarks and non-affiliation
+
+Product and company names in this repository belong to their owners and are used only to say what this project works with. HF Laboratories is not affiliated with, endorsed by, or sponsored by any of them.
+
+- Intel, oneAPI, Level Zero are trademarks or registered trademarks of Intel Corporation.
+- Microsoft, Windows, .NET, PowerShell, NuGet are trademarks or registered trademarks of Microsoft Corporation.
+- OpenAI is a trademark or registered trademark of OpenAI.
+- Hugging Face is a trademark or registered trademark of Hugging Face, Inc.
+- macOS is a trademark or registered trademark of Apple Inc.
+- Linux is a trademark or registered trademark of Linus Torvalds.
+- Ubuntu is a trademark or registered trademark of Canonical Ltd.
+
+See [hflabs.dev/legal/trademarks](https://hflabs.dev/legal/trademarks) for the full list.
