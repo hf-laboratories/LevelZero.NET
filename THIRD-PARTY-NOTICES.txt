@@ -1,8 +1,9 @@
 L0.NET PUBLIC COMPONENT NOTICE
 
 The HFLabs-authored source code and kernel artifacts included in the public
-L0.NET component boundary are licensed under the accompanying MIT license.
-This notice does not relicense third-party materials.
+L0.NET component boundary are licensed under the accompanying HFLabs Dual
+License (Community / Research and Commercial). See the LICENSE file. This
+notice does not relicense third-party materials.
 
 The public package does not include the vendored SYCL toolchain, compiler
 distribution, or compiler headers/libraries. Those materials remain excluded
