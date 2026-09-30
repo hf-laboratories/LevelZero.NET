@@ -2,6 +2,10 @@
 
 This shim exposes a minimal C ABI over the Level Zero loader so it can be called from C# via P/Invoke.
 
+## Level Zero loader
+
+The Level Zero loader (`ze_loader.dll`) is not included in this repository. On Windows it is installed with the Intel GPU driver (`System32\ze_loader.dll`). You can also point `LEVELZERO_NET_ZE_LOADER_PATH` at your own copy, or build the loader from the upstream project.
+
 ## Build
 
 Set `LEVEL_ZERO_ROOT` to the Level Zero loader install (contains `ze_loader`), then:

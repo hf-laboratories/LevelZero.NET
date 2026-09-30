@@ -19,3 +19,7 @@ artifacts/
 .idea/
 .vscode/
 *.swp
+
+## Vendor runtime (not redistributable by us; comes from the Intel GPU driver)
+ze_loader*.dll
+ze_loader*.lib
