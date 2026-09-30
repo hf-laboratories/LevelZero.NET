@@ -65,4 +65,4 @@ buffer.CopyTo(hostData);
 ## 📄 Licensing & Commercial Use
 
 * **Community / Research License:** Free for open-source development, academic research, and evaluation.
-* **Commercial License:** Required for embedding in proprietary or commercial desktop/server software. Contact HFLabs for commercial licensing and custom kernel engineering services.
+* **Commercial License:** Required for embedding in proprietary or commercial desktop/server software. Contact alix@HFLabs.dev for commercial licensing and custom kernel engineering services.
