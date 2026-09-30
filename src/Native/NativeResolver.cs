@@ -83,7 +83,7 @@ internal static class NativeResolver
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                PrepareWindowsZeLoader(asm, cacheDir);
+                PrepareWindowsZeLoader(cacheDir);
                 ExtractResource(asm, "LevelZero.Native.LevelZeroShim.dll",
                     Path.Combine(cacheDir, "LevelZeroShim.dll"));
             }
@@ -98,7 +98,7 @@ internal static class NativeResolver
         }
     }
 
-    private static void PrepareWindowsZeLoader(Assembly assembly, string cacheDir)
+    private static void PrepareWindowsZeLoader(string cacheDir)
     {
         string targetPath = Path.Combine(cacheDir, "ze_loader.dll");
         string? overridePath = GetConfiguredLoaderPath();
@@ -116,7 +116,8 @@ internal static class NativeResolver
             return;
         }
 
-        ExtractResource(assembly, "LevelZero.Native.ze_loader.dll", targetPath);
+        // No system loader and no override: the Intel Level Zero loader is not redistributed
+        // with LevelZero.NET. It is installed with the Intel GPU driver.
     }
 
     private static string? GetConfiguredLoaderPath()
